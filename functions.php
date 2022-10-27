@@ -417,6 +417,13 @@ function savePDF(){
 		wp_update_attachment_metadata( $attach_id, $attach_data );
 		$msj['url']=wp_get_attachment_url( $attach_id );
 		//*******************************************************************************
+		$val = array(
+			'usuario'		=>	'<ul><li><b>ID:<b>'.$current_user->ID.'</li><li><b>Name:</b>'.$current_user->display_name.'</li><li><b>Email:</b>'.$current_user->user_email.'</li></ul>',
+			'url_archivo'	=>	$msj['url'],
+			'empresa'		=>	$nomPDF,
+			'fecha'			=>	date('d/m/Y g:i a')
+		);
+		add_row('historial_pdf', $val, 'option');
 		//unlink($upload_dir['path'].'/'.$filename);//borrar archivo
 		//$msj['url']=$upload_dir['path'].'/'.$filename;
 	} catch (\Ilovepdf\Exceptions\StartException $e) {
@@ -476,7 +483,7 @@ function check_meta_values($meta_id, $post_id, $meta_key, $meta_value){
 			//echo '<p>Modifica Registro</p>';
 			$val = array(
 				'usuario'		=>	'<ul><li><b>ID:<b>'.$current_user->ID.'</li><li><b>Name:</b>'.$current_user->display_name.'</li><li><b>Email:</b>'.$current_user->user_email.'</li></ul>',
-				'empresa'		=>	get_field('nombre_de_la_sociedad',$post_id),
+				'empresa'		=>	'ID:'.$post_id.' Nombre:'.get_field('nombre_de_la_sociedad',$post_id),
 				'modificacion'	=>	'<ul><li><b>'.$meta_key.'<b>:'.$meta_value.'</li></ul>',
 				'fecha'			=>	date('d/m/Y g:i a')
 			);
