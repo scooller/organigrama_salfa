@@ -1,0 +1,11 @@
+#adminmenu .wp-menu-image img{
+	width: 20px;
+}
+#adminmenu .toplevel_page_theme-general-settings img{
+	filter: invert(1);
+}
+.dashicons-admin-page:before{
+	font-family: "Font Awesome 6 Free"!important;
+    font-weight: 900;
+	content: "\e4d1"!important;
+}
