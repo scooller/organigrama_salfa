@@ -71,7 +71,7 @@ if(isset($_GET['save'])) $classes="pdf-body";
         <div class="ms-auto d-flex">
 			<div class="nav-item dropdown">
 				<button class="btn btn-gris dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-					<i class="fa-solid fa-city"></i> Links Sociedades
+					Unidades de Negocios
 				</button>
 				<ul class="dropdown-menu text-center" style="padding: 0.5rem;">
 					<?php $chl_menu_pages=pagina_hijo(45);
@@ -87,7 +87,7 @@ if(isset($_GET['save'])) $classes="pdf-body";
 						unset($arrayIds[$key]);
 					?>
 					<a class="btn btn-gris mb-1" href="<?php echo get_site_url(); ?>/?nemp=<?php echo implode(",",$arrayIds) ?>">
-						<i class="fa-solid fa-building-circle-arrow-right"></i> Ver <strong><?php the_field('nombre_de_la_sociedad',$chl_menu_page->ID); ?></strong>
+						Ver <strong><?php echo get_the_title($chl_menu_page->ID); ?></strong>
 					</a>
 					<?php endforeach; ?>
 				</ul>

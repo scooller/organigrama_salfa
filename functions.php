@@ -373,7 +373,7 @@ function savePDF(){
 			unset($arrayIds[$key]);
 			$arrayIds=implode(",",$arrayIds);
 			if($nemp == $arrayIds){
-				$nomPDF=get_field('nombre_de_la_sociedad',$chl_menu_page->ID);
+				$nomPDF=get_the_title($chl_menu_page->ID);
 			}
 		}
 		if($nemp){
