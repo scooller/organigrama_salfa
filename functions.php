@@ -29,6 +29,33 @@ if( function_exists('acf_add_options_page') ) {
 		'icon_url'		=> get_template_directory_uri() .'/img/gears-solid.svg'
 	));
 }
+/**
+ * Add a new dashboard widget.
+ */
+function wpdocs_add_dashboard_widgets() {
+	wp_add_dashboard_widget( 'dashboard_widget_pdf', 'Historial malla', 'dashboard_widget_pdf' );
+	wp_add_dashboard_widget( 'dashboard_widget_modificaciones', 'Reporte de Modificaciones', 'dashboard_widget_modificaciones' );
+}
+add_action( 'wp_dashboard_setup', 'wpdocs_add_dashboard_widgets' );
+
+/**
+ * Output the contents of the dashboard widget
+ */
+function dashboard_widget_pdf( $post, $callback_args ) {
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( 2476 ) ); ?>" target="_blank" class="button button-primary">Ver Historial malla PDF</a>
+	<?php
+	echo ob_get_clean();
+}
+function dashboard_widget_modificaciones( $post, $callback_args ) {
+	ob_start();
+	?>
+	<a href="<?php echo esc_url( get_permalink( 2457 ) ); ?>" target="_blank" class="button button-primary">Ver Reporte de Modificaciones</a>
+	<?php
+	echo ob_get_clean();
+}
+
 
 function noImage($cont){	
 	return preg_replace('/<img[^>]+>/i', '', $cont);
