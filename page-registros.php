@@ -1,9 +1,9 @@
 ﻿<?php /* Template Name: Pagina Registro */ 
 get_header('pdf'); ?>
 <?php if ( have_posts() ) : while ( have_posts() ) : the_post(); $ID=get_the_ID(); ?>
-<div class="contanier">
+<div class="contanier" style="<?php echo isset($_GET['save'])?'margin-top: 2rem;':''?>">
 	<?php the_content(); ?>
-	<form action="<?php echo get_permalink() ?>" method="post" class="row g-3">
+	<form action="<?php echo get_permalink() ?>" method="post" class="row g-3 <?php echo isset($_GET['save'])?'d-none':''; ?>">
 		<div class="col-auto">
 			<label for="inputFecha">Fecha Inicio</label>
 			<input type="date" name="fecha_init" class="form-control" id="inputFecha" placeholder="dd-mm-yyyy" value="<?=$_POST['fecha_init'] ?>">

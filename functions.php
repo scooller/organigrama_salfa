@@ -504,9 +504,11 @@ function check_values($post_ID, $post_after, $post_before){
 }
 //add_action( 'post_updated', 'check_values', 20, 3 );
 function btn_pdf($atts, $content = "Descargar PDF"){
-	ob_start();
+	global $wp;
+	$actual_link=home_url( $wp->request );
+	ob_start();	
 ?>
-	<button class="btn btn-gris mb-1 screenshoot <?=$atts['class']?>" data-id="" data-url="<?php echo $actual_link ?>" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Descargar PDF Actual">
+	<button class="btn btn-gris mb-1 screenshoot <?=$atts['class']?> <?php echo isset($_GET['save'])?'d-none':''; ?>" data-id="" data-url="<?php echo $actual_link ?>" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Descargar PDF Actual">
 		<i class="fa-solid fa-spinner fa-spin load"></i><i class="fa-solid fa-download ok"></i> <?=$content;?>
 	</button>
 <?php 
