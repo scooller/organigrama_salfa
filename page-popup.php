@@ -1,5 +1,16 @@
 ﻿<?php /* Template Name: Pagina PopUps */ 
-get_header('nomenu'); ?>
+get_header('nomenu'); 
+if ( !is_user_logged_in() ):
+?>
+<div class="text-center">
+	<h1>Atención</h1>
+	<a href="/wp-login.php" rel="home" class="btn btn-gris mt-3"><i class="fa-solid fa-right-to-bracket"></i> Debe conectarse para ver el sitio</a>
+</div>
+<?php 
+	get_footer();
+	wp_die();
+endif;
+?>
 <?php if ( have_posts() ) : 
 	$ID=$_GET['id'];
 	$frontID = get_option('page_on_front'); 

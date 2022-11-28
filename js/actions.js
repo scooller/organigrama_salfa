@@ -65,12 +65,7 @@ $(function() {
 		$('.btn-zoom .list-group-item-action:nth-child(6)').click(function(){
 			$(this).toggleClass('active');
             mostrarTexto();
-        });
-		$('.screenshoot').click(function(){
-			console.warn('PDF');
-			$(this).prop('disabled', true);
-            screenshoot($(this));
-        });
+        });		
         //--
 		$(window).bind('mousewheel', function(e){
 			if(e.originalEvent.wheelDelta /120 > 0) {
@@ -82,6 +77,13 @@ $(function() {
 			}
 		});
     }
+	if($('.screenshoot').length){
+		$('.screenshoot').click(function(){
+			console.warn('PDF');
+			$(this).prop('disabled', true);
+            screenshoot($(this));
+        });
+	}
 	var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
 	var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 	  return new bootstrap.Tooltip(tooltipTriggerEl)
@@ -152,7 +154,7 @@ function mostrarTexto(){
 }
 function screenshoot(btn){
 	//$('.tools.zoom').hide();
-	
+	console.log('screenshoot');
 	var getUrlParameter = function getUrlParameter(sParam) {
 		var sPageURL = window.location.search.substring(1),
 			sURLVariables = sPageURL.split('&'),
@@ -169,6 +171,10 @@ function screenshoot(btn){
 		return false;
 	};
 	var $nemp = getUrlParameter('nemp');
+	var $nUrl;
+	if(btn.data('url')){
+		$nUrl=btn.data('url');
+	}
 
 	if(btn.data('id')){
 		$nemp=btn.data('id');
@@ -178,7 +184,7 @@ function screenshoot(btn){
 	$.ajax({
 		type: "post",
 		url: ajax_var.url_ajax,
-		data: {action:"save-pdf",nemp:$nemp},
+		data: {action:"save-pdf",nemp:$nemp,url:$nUrl},
 		dataType: 'json',
 		success: function(result){
 			$.fancybox.close();
@@ -590,6 +596,10 @@ function minimizeChart(element,id,center){
 	$('#scaja-'+id+' > .cont > .caja').find('.fa-solid.fa-circle-minus').addClass("d-none");
 	$('#scaja-'+id+' > .cont > .caja').find('.fa-solid.fa-circle-plus').removeClass("d-none");
 	$('#scaja-'+id+' > .cont > .caja').find('.box').toggleClass("d-none");
+	
+	if( (id==61) && $(element).find('.fa-solid.fa-circle-plus').hasClass('d-none') ){
+		$('#emp-2211 > .box > .cerrar-link').trigger('click');
+	}
     if(typeof center !== 'undefined'){
         centerImg();
     }

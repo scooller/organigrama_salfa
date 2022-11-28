@@ -176,6 +176,7 @@ input[type=range]::-ms-track {
 		background-color: rgba($white,.9);
 		.list-unstyled{		
 			margin-top: 0.8rem;
+			font-size: .8rem;
 			li{
 				text-align: left;
 				span{
@@ -188,8 +189,8 @@ input[type=range]::-ms-track {
 			}
 		}
 		.ver{	
-			font-size: 11px;
-			padding: .5rem 1rem;	
+			font-size: 65%;
+			padding: 0;	
 		}
 	}
 	/*
@@ -268,6 +269,15 @@ body.pdf-body{
 .table-fix{
 	table-layout: fixed;
     word-wrap: break-word;
+}
+.rojo{
+	color: $rojo;
+}
+.red-title{
+	background-color: $rojo;
+    color: $white;
+    margin-top: -2rem;
+    padding: 1rem 1.5rem;
 }
 #organigrama{
 	transform-origin: top center;

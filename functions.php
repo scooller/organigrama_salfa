@@ -359,6 +359,9 @@ function savePDF(){
 		$myTaskHtmlpdf = $ilovepdf->newTask('htmlpdf');
 		// Add url to task for process
 		$url = home_url();
+		if(!empty($_POST['url'])){
+			$url = $_POST['url'];
+		}		
 		$chl_menu_pages=pagina_hijo(45);
 		$id_pags=array();
 		//var_dump($chl_menu_pages);
@@ -473,7 +476,6 @@ function total_porc($id){
 }
 //funcion cambios
 function check_meta_values($meta_id, $post_id, $meta_key, $meta_value){
-	//echo '<h1>updated_post_meta '.$meta_key.':('.$meta_value.')</h1>';
 	
 	$current_user = wp_get_current_user();
 	$pos = strpos($meta_key, "modificaciones");
@@ -491,7 +493,7 @@ function check_meta_values($meta_id, $post_id, $meta_key, $meta_value){
 		}
 	}
 }
-add_action( 'updated_post_meta', 'check_meta_values', 10, 4 );
+//add_action( 'updated_post_meta', 'check_meta_values', 10, 4 );
 function check_values($post_ID, $post_after, $post_before){
 	$current_user = wp_get_current_user();
 	$val = array(
@@ -500,4 +502,14 @@ function check_values($post_ID, $post_after, $post_before){
 	);
 	add_row('registro_modificaciones', $val, $post_ID);
 }
-add_action( 'post_updated', 'check_values', 20, 3 );
+//add_action( 'post_updated', 'check_values', 20, 3 );
+function btn_pdf($atts, $content = "Descargar PDF"){
+	ob_start();
+?>
+	<button class="btn btn-gris mb-1 screenshoot <?=$atts['class']?>" data-id="" data-url="<?php echo $actual_link ?>" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Descargar PDF Actual">
+		<i class="fa-solid fa-spinner fa-spin load"></i><i class="fa-solid fa-download ok"></i> <?=$content;?>
+	</button>
+<?php 
+	return ob_get_clean();
+}
+add_shortcode( 'btnpdf', 'btn_pdf' );//[btnpdf]

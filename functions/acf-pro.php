@@ -106,3 +106,21 @@ function acf_load_udnegocio_choices_legacy( $field ) {
     return $field;
 }
 //add_filter('acf/load_field/key=field_628186a96bfd5', 'acf_load_udnegocio_choices_legacy');
+//--
+function acf_current_empresa( $field ) {
+	global $post;
+	$field['value']=$post;
+	return $field;
+}
+add_filter('acf/load_field/key=field_63703c39d5652', 'acf_current_empresa');
+function acf_current_user( $field ) {
+	$current_user = wp_get_current_user();
+	$field['value']=$current_user->ID;
+	return $field;
+}
+add_filter('acf/load_field/key=field_63703c7cd5655', 'acf_current_user');
+function acf_current_fecha( $field ) {
+	$field['value']=date('d/m/Y g:i a');
+	return $field;
+}
+add_filter('acf/load_field/key=field_63703c53d5654', 'acf_current_fecha');

@@ -43,7 +43,7 @@ if(isset($_GET['save'])) $classes="pdf-body";
 		wp_die();
 	}
 ?>
-<section class="nav fixed-top">
+<section class="nav fixed-top <?php echo isset($_GET['save'])?'d-none':'';?>">
     <nav id="menu" class="menu navbar navbar-expand-lg container-fluid flex-wrap justify-content-between align-items-end px-4">
         <a href="<?php echo home_url( '/' ); ?>" class="navbar-brand" title="Volver al Home"><img src="<?=$logo?>" style="height: 24px" class="img-fluid"></a>
 		<h5><a href="<?php echo home_url( '/' ); ?>"><?php bloginfo('description'); ?></a></h5>
@@ -68,60 +68,6 @@ if(isset($_GET['save'])) $classes="pdf-body";
 		
 		$current = ($actual_link == $link_out) ? 'current_page' : '';
         ?>
-        <div class="ms-auto d-flex">
-			<div class="nav-item dropdown">
-				<button class="btn btn-gris dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-					Unidades de Negocio
-				</button>
-				<ul class="dropdown-menu text-center" style="padding: 0.5rem;">
-					<?php $chl_menu_pages=pagina_hijo(45);
-					$id_pags=array();
-					//var_dump($chl_menu_pages);
-					foreach($chl_menu_pages as $chl_menu_page){
-						array_push($id_pags,$chl_menu_page->ID);
-					}
-					//--
-					foreach($chl_menu_pages as $chl_menu_page):
-						$arrayIds = $id_pags;
-						$key = array_search($chl_menu_page->ID, $id_pags);
-						unset($arrayIds[$key]);
-					?>
-					<a class="btn btn-gris mx-auto mb-1 w-100" href="<?php echo get_site_url(); ?>/?nemp=<?php echo implode(",",$arrayIds) ?>">
-						<strong><?php echo get_the_title($chl_menu_page->ID); ?></strong>
-					</a>
-					<?php endforeach; ?>
-				</ul>
-				<!--
-				<ul class="dropdown-menu text-center" style="padding: 0.5rem;">
-					<button class="btn btn-gris current_page mb-1 screenshoot" data-id="" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Descargar PDF Organigrama">
-						<i class="fa-solid fa-spinner fa-spin load"></i><i class="fa-solid fa-download ok"></i> PDF Completo
-					</button>
-					<?php $chl_menu_pages=pagina_hijo(45);
-					$id_pags=array();
-					//var_dump($chl_menu_pages);
-					foreach($chl_menu_pages as $chl_menu_page){
-						array_push($id_pags,$chl_menu_page->ID);
-					}
-					//--
-					foreach($chl_menu_pages as $chl_menu_page):
-						$arrayIds = $id_pags;
-						$key = array_search($chl_menu_page->ID, $id_pags);
-						unset($arrayIds[$key]);
-					?>
-					<button class="btn btn-gris mb-1 screenshoot" data-id="<?php echo implode(",",$arrayIds) ?>" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Descargar PDF Organigrama">
-						<i class="fa-solid fa-spinner fa-spin load"></i><i class="fa-solid fa-download ok"></i> PDF <?php the_field('nombre_de_la_sociedad',$chl_menu_page->ID); ?>
-					</button>
-					<?php endforeach; ?>
-				</ul>
-				-->
-			</div>
-			<button class="btn btn-gris mb-1 screenshoot" data-id="" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Descargar PDF Organigrama">
-				<i class="fa-solid fa-spinner fa-spin load"></i><i class="fa-solid fa-download ok"></i> Descargar PDF
-			</button>				
-            <a href="<?php echo home_url('/busqueda') ?>" class="btn btn-gris <?=$current;?>" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Abrir Buscador">
-				<i class="fa-solid fa-magnifying-glass"></i> Buscar
-			</a>
-        </div>
         </div>
     </nav>
 </section>
