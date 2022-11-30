@@ -4,7 +4,7 @@
 	$logo=get_field('logo',$ID);
 	if( is_null($logo) ) $logo=get_field('logo',$frontID);
 ?>
-<section id="page-<?=$ID;?>" class="container-fluid h-100 d-flex justify-content-center align-items-center">
+<section id="page-<?=$ID;?>" class="container-fluid h-100 d-flex justify-content-center align-items-center pb-4">
 	<div class="container">
 		<div class="tabla-caja box-shadow-n14">
 			<div class="row">

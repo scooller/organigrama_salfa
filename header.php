@@ -38,9 +38,12 @@ if(isset($_GET['save'])) $classes="pdf-body";
     </div>
 	<?php	
 	if ( post_password_required( $post ) && !isset($_GET['save']) ){
+		pass_cookie();
     	echo get_the_password_form();
 		get_footer();
 		wp_die();
+	}else{
+		pass_cookie(true);
 	}
 ?>
 <section class="nav fixed-top">

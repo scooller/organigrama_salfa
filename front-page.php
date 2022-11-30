@@ -3,7 +3,7 @@ global $detect;
 $custom_logo_id = get_theme_mod( 'custom_logo' );
 $logo = wp_get_attachment_image_src( $custom_logo_id , 'full' );
 ?>
-<section id="pron" class="container-fluid text-center" style="<?php echo isset($_GET['save'])?'margin-top: 50rem;':''; ?>">
+<section id="pron" class="container-fluid text-center" style="<?php echo isset($_GET['save'])?'margin-top: 50rem; margin-left: -10rem':''; ?>">
 <?php if ( have_posts() ) : ?>	
 	<?php while ( have_posts() ) : the_post(); $ID=get_the_ID(); ?>
 	<div id="organigrama" class="caja caja-madre mx-auto text-center">
@@ -142,7 +142,7 @@ $logo = wp_get_attachment_image_src( $custom_logo_id , 'full' );
 			<button type="button" data-bs-toggle="tooltip" class="list-group-item list-group-item-action d-none" data-bs-placement="left" title="Mostrar Textos"><i class="fa-solid fa-text-width"></i></button>
 		</div>
 	</div>
-	<div class="tools simbologia">
+	<div class="tools simbologia" style="<?php echo isset($_GET['save'])?'transform: scale(.6)':''; ?>">
 		<b>Simbología</b>
 		<ul class="list-unstyled">
 		<?php if( have_rows('Simbologia','option') ):

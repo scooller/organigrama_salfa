@@ -1,11 +1,11 @@
 ﻿<?php /* Template Name: Pagina PDF */ 
 get_header('pdf'); ?>
 <?php if ( have_posts() ) : while ( have_posts() ) : the_post(); $ID=get_the_ID(); ?>
-<div class="contanier">
+<div class="contanier" style="<?php echo isset($_GET['save'])?'margin-top: 2rem;':''?>">
 	<?php the_content(); ?>
 	<br><br>
 	<?php if( have_rows('historial_pdf','option') ): ?>
-	<div class="list-group">
+	<div class="list-group" style="<?php echo isset($_GET['save'])?'margin-left: 2rem;':''?>">
 	<?php while( have_rows('historial_pdf','option') ): the_row();  ?>
 		<div class="list-group-item list-group-item-action">
 			<div>

@@ -2,6 +2,16 @@
 //header('Access-Control-Allow-Origin: *'); 
 global $lang,$detect;
 add_action( 'after_setup_theme', 'register_my_menu' );
+add_action('init', 'cyb_session_start', 1);
+function cyb_session_start() {
+    if( ! session_id() ) {
+        session_start();
+		setcookie('wpb_pass_ok', false, time()+3600);
+		if(!isset($_SESSION['wpb_pass_ok'])){
+			pass_cookie();
+		}
+    }
+}
 function register_my_menu() {  
 	register_nav_menu( 'general', __( 'Menu Principal' ) );
 	add_theme_support( 'post-thumbnails' );
@@ -360,6 +370,10 @@ function color_simbolo($simbolo){
   reset_rows();
   return $color;
 }
+function pass_cookie($val=false){
+	$_SESSION['wpb_pass_ok']=$val;
+	if($_GET['dev']) var_dump($_SESSION);
+}
 /*
 function color_leyenda($leyenda){
   $color = false;
@@ -372,6 +386,19 @@ function color_leyenda($leyenda){
   reset_rows();
   return $color;
 }*/
+add_action( 'wp_ajax_nopriv_pass_check', 'passCheck' );
+add_action( 'wp_ajax_pass_check', 'passCheck' );
+function passCheck(){
+	if(isset($_POST['pass'])){
+		if($_POST['pass']==get_field('contrasena_paginas','option')){
+			pass_cookie(true);
+			echo 'Ok';
+		}else{
+			echo 'Contraseña Erronea';
+		}
+	}
+	wp_die();
+}
 add_action( 'wp_ajax_nopriv_save-pdf', 'savePDF' );
 add_action( 'wp_ajax_save-pdf', 'savePDF' );
 function savePDF(){
