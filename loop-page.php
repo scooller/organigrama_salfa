@@ -24,7 +24,7 @@
 							$sub_empresa=get_field('nombre_de_la_sociedad',$sub_empresa_id);
 							if(get_sub_field('t_emp')){					
 								$sub_empresa=get_sub_field('empresa_externa');
-							}
+							}							
 			            ?>
 			          	<li class="list-group-item">
 			          		<small><b><?php echo $sub_empresa; ?></b><br>

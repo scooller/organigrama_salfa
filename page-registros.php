@@ -116,6 +116,28 @@ get_header('pdf'); ?>
 				foreach(array_reverse($registro['registros']) as $min_reg):				
 				?>
 				<li class="list-group-item">
+					<?php 
+					switch($min_reg['tipo']){
+						case 'Crea':
+							echo '<b class="rojo">EMPRESA CREADA</b><br><br>';
+							break;
+						case 'Adquiere':
+							echo '<b class="rojo">EMPRESA ADQUIRIDA (TERCEROS)</b><br><br>';
+							break;
+						case 'Traspasa':
+							echo '<b class="rojo">EMPRESA TRASPASADA (PROPIA O SOCIA)</b><br><br>';
+							break;
+						case 'Fusiona':
+							echo '<b class="rojo">EMPRESA FUSIONADA</b><br><br>';
+							break;
+						case 'Cierra':
+							echo '<b class="rojo">EMPRESA CERRADA Y/O CON TÉRMINO DE GIRO</b><br><br>';
+							break;
+						default:
+							echo '<b class="rojo">'.$min_reg['tipo'].'</b><br><br>';
+							break;
+					}
+					?>
 					Se &quot;<strong class="rojo"><?php echo $min_reg['tipo'] ?></strong>&quot; a la empresa <strong class="rojo"><?php echo $min_reg['empresa'] ?></strong> 
 					<?php echo $min_reg['cambio'] ?> con <strong class="rojo">fecha de <?php echo $min_reg['fecha']; ?></strong><br>
 					usuario: <strong><?php echo $min_reg['usuario'] ?></strong><br>

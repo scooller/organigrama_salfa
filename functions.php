@@ -356,7 +356,49 @@ function sub_cajas($id,$n=1){
     return false;
   endif;
 }
-
+function deleteRows(string $acfRepeaterFieldKey, int $postID) {
+	$rr=false;
+	reset_rows();
+	$fieldValue = get_field($acfRepeaterFieldKey, $postID);
+	if (is_array($fieldValue)){
+		$remainingRows = count($fieldValue);
+		while (have_rows($acfRepeaterFieldKey, $postID)) :
+			the_row();
+			delete_row($acfRepeaterFieldKey, $remainingRows--, $postID);
+			$rr=true;
+		endwhile;
+	}
+	return $rr;
+}
+add_shortcode( 'delporc', 'borrar_porc' );//[delporc]
+function borrar_porc(){
+	$args = array(
+		'post_type'           => 'page',
+		'posts_per_page'      => -1,
+		'post_status'         => 'publish',
+		'order'               => 'ASC',
+		'orderby'             => 'menu_order'
+  	);
+	$wp_query = new WP_Query($args);
+	$pt=0;
+	$borrados=0;
+	if ( $wp_query->have_posts() ) {
+		// Start looping over the query results. 
+		while ( $wp_query->have_posts() ) {
+			$wp_query->the_post();
+			$id = get_the_ID();
+			$dr=deleteRows('empresas_asociadas',$id);
+			if($dr) $borrados++;
+			$pt++;
+		}
+	}
+	echo '<div class="alert alert-danger mt-3 d-flex" id="aviso-msj" role="alert">';
+	echo '<i class="fa-solid fa-skull-crossbones flex-shrink-0 me-2"></i><div>';
+	echo "<p>Total paginas/empresas es de <strong><i class=\"fa-solid fa-city\"></i> {$pt}</strong></p>";
+	echo "<p>Total de empresas minoritarias Borrados es de <strong><i class=\"fa-solid fa-building-circle-xmark\"></i> {$borrados}</strong></p>";
+	echo '</div></div>';
+	wp_reset_postdata();
+}
 function color_simbolo($simbolo){
 	if($simbolo=='Asociados') $simbolo="Asociaciones";
   $color = false;
@@ -434,15 +476,19 @@ function savePDF(){
 			}
 		}
 		if($nemp){
+			$PageSize = get_field('hoja_pdf_info','option');
 			$file = $myTaskHtmlpdf->addUrl($url.'?zoom='.get_field('zoom_pdf','option').'&save=1&nemp='.$nemp);
 		}else{
+			$PageSize = get_field('hoja_pdf','option');
 			$file = $myTaskHtmlpdf->addUrl($url.'?zoom='.get_field('zoom_pdf','option').'&save=1');
 		}
 		$current_user = wp_get_current_user();
 		$fecha = date("d-m-Y_H:i:s");
 		$nomFile = $nomPDF.' ('.$current_user->display_name.') ('.$fecha.').pdf';
-		$myTaskHtmlpdf->setSinglePage(get_field('pagina_larga','option'));
-		$myTaskHtmlpdf->setPageSize(get_field('hoja_pdf','option'));
+		$myTaskHtmlpdf->setSinglePage(get_field('pagina_larga','option'));		
+		
+		$myTaskHtmlpdf->setPageSize($PageSize);
+		
 		$myTaskHtmlpdf->setViewWidth(get_field('ancho_pdf','option'));
 		$myTaskHtmlpdf->setOutputFilename('organigrama_{n}_{date}');
 
@@ -569,3 +615,330 @@ function btn_pdf($atts, $content = "Descargar PDF"){
 	return ob_get_clean();
 }
 add_shortcode( 'btnpdf', 'btn_pdf' );//[btnpdf]
+function buscarRut($rut){
+	global $post,$wpdb;
+	$rut = $wpdb->_real_escape( $rut );
+	$meta_query = array(
+		//'relation' => 'OR'
+		'relation' => 'AND'
+	);
+	array_push($meta_query,
+		array(
+			'key'		=> 'rut',
+			'value'		=> $rut,
+			'compare'	=> 'LIKE'
+		)
+	);
+	$args = array(
+		'posts_per_page'=> -1,
+		'post_type'		=> 'page',
+		'post_status'   => 'publish',
+		'order'         => 'ASC',
+		'orderby'       => 'title',
+		'meta_query'	=> $meta_query
+	);
+	$the_query = new WP_Query($args);
+	//--
+	$return=false;
+	//$the_query = new WP_Query( $args );
+	if( $the_query->have_posts() ): while ( $the_query->have_posts() ) : $the_query->the_post();
+		$return = $post->ID;
+	endwhile; endif;
+	wp_reset_query();
+	//--
+	return $return;
+}
+function format_rut( $rut ) {
+	if(empty($rut)) return false;
+	$rut = str_replace(".", "", $rut);
+	return number_format( substr ( $rut, 0 , -1 ) , 0, "", ".") . '-' . substr ( $rut, strlen($rut) -1 , 1 );
+}
+//Cargar CSV
+add_action( 'wp_ajax_nopriv_carga-csv', 'cargaCSV' );
+add_action( 'wp_ajax_carga-csv', 'cargaCSV' );
+function cargaCSV(){
+	global $wpdb;
+	$upload_dir = wp_upload_dir();
+	$supported_file = array('csv');
+	$ext = strtolower(pathinfo($_FILES['archivo']['name'], PATHINFO_EXTENSION));
+	$filename = strtolower($_FILES['archivo']['name']);
+	//--
+	if (in_array($ext, $supported_file)==false) wp_die('Error al Subir Archivo (Extensión de archivo no válido)');
+	//$_FILES[ 'archivo' ][ 'name' ]
+	$archivo_srv=$upload_dir['path'].'/'.$filename;
+	if (move_uploaded_file($_FILES['archivo']['tmp_name'], $archivo_srv)) {
+		//echo "Archivo subido";
+		$fila = 1;
+		$extranjeras = 0;
+		$externo = 0;
+		$errores = 0;
+		if (($gestor = fopen($archivo_srv, "r")) !== FALSE) {
+			ob_start();
+			?>
+			<h4>Resumen de Cambios a continuación:</h4>
+			<div class="table-responsive" style="height: 90vh;">
+			<table id="table" class="table table-bordered align-middle">
+			  <thead class="table-dark">
+			    <tr>
+					<th scope="col">ID</th>
+					<th class="col-A">RUT Matriz</th>
+					<th class="col-B">Nombre de la Sociedad</th>
+					<th class="col-C">Código SAP (Matriz)</th>
+					<th class="col-D">RUT dueño</th>
+					<th class="col-E">Nombre Dueño</th>
+					<th class="col-F">Clasificación de Dueño</th>
+					<th class="col-G">Unidad de Negocio de la sociedad</th>
+					<th class="col-H">Asociada</th>
+					<th class="col-I">Contabilidad</th>
+					<th class="col-J">Gerente General</th>
+					<th class="col-K">Moneda Funcional</th>
+					<th class="col-L">Giro</th>
+					<th class="col-M">Dirección</th>
+					<th class="col-N">País</th>
+					<th class="col-O">Fecha de Constitución</th>
+					<th class="col-P">Acciones Emitidas</th>
+					<th class="col-Q">Acciones Invertidas</th>
+					<th class="col-R">RUT</th>
+					<th class="col-S">Porcentaje</th>
+					<th class="col-T">Clasificacion de Matriz</th>
+					<th scope="col-U">Empresa</th>
+					<th scope="col">ID</th>
+					<th class="col-Z">EXTRA</th>
+			    </tr>
+			  </thead>
+			  <tbody class="table-group-divider">
+			<?php
+			$nc=1;
+			$tID=0;
+			while (($datos = fgetcsv($gestor, 1000, ",")) !== FALSE) {
+				if($fila > 1){
+					//$numero = count($datos);
+					//echo "<p> $numero de campos en la línea $fila: <br /></p>\n";
+					/*
+					for ($c=0; $c < $numero; $c++) {
+						echo $datos[$c] . "<br />\n";
+					}*/
+					if( $datos[0] === "(Extranjera)" ){
+						$extranjeras++;
+					}else if( $datos[0] === "Externo" ){
+						$externo++;
+					}else{
+						$rut=format_rut($datos[0]);
+						$ID=buscarRut($rut);
+						if($ID){
+							$rut_dueno = format_rut($datos[3]);
+							$rut_emp = format_rut($datos[17]);
+							if($rut_emp=='Sin información'||$rut_emp=='N/A'||$rut_emp=='Revisar'||$rut_emp='-o')$rut_emp=false;
+							$sap = (is_numeric($datos[2]))?'':intval($datos[2]);							
+							$asociada = ($datos[7]=='Si')?true:false;
+							$asociada = ($datos[7]=='Revisar')?'':$asociada;
+							$conta = ($datos[8]=='Revisar')?'':ucfirst($datos[8]);
+							$giro = (trim($datos[11])=='-')?'':$datos[11];
+							if($giro=='Sin Información'||$dire=='N/A'||$giro=='Revisar'||$giro==0) $giro=='';
+							$dire = (trim($datos[12])=='-')?'':$datos[12];
+							if($dire=='Sin Información'||$dire=='N/A'||$dire=='Revisar'||$dire==0) $dire=='';
+							$acc_em = (trim($datos[15])=='N/A')?'':intval($datos[15]);
+							$acc_inv = (trim($datos[16])=='N/A')?'':intval($datos[16]);
+							$dueno = $datos[4];
+							if($dueno=='Sin información'||$dueno=='N/A'||$dueno=='Revisar') $dueno=='';
+							$acc = (trim($datos[18])=='FALTAN %')?0:trim($datos[18]);
+							$acc = normalizeNumber($acc);
+							$fecha = date("d/m/Y", strtotime($datos[14]));
+							$gerente=($datos[9]=='N/A')?'':$datos[9];
+							if($gerente=='Sin información'||$gerente=='N/A'||gerente=='Revisar')$gerente=='';
+							$UDN=($datos[6]=='Revisar')?'':$datos[6];
+						?>
+						<tr>
+							<th scope="col"><a href="<?php echo esc_url( get_permalink( $ID ) ); ?>" target="_blank"><?=$ID;?></a></th>
+							<th class="col-A"><?=$rut;?></th>
+							<th class="col-B"><a href="<?php echo esc_url( get_permalink( $ID ) ); ?>" target="_blank"><?=$datos[1];?></a></th>
+							<th class="col-C"><?=$sap;?></th>
+							<th class="col-D"><?=$rut_dueno;?></th>
+							<th class="col-E"><?=$dueno;?></th>
+							<th class="col-F"><?=$datos[5];?></th>
+							<th class="col-G"><?=$UDN;?></th>
+							<th class="col-H"><?=$asociada;?></th>
+							<th class="col-I"><?=$conta;?></th>
+							<th class="col-J"><?=$gerente;?></th>
+							<th class="col-K"><?=$datos[10];?></th>
+							<th class="col-L"><?=$giro;?></th>
+							<th class="col-M"><?=$dire;?></th>
+							<th class="col-N"><?=$datos[13];?></th>
+							<th class="col-O"><?=$fecha;?></th>
+							<th class="col-P"><?=$acc_em;?></th>
+							<th class="col-Q"><?=$acc_inv;?></th>
+							<th class="col-R"><?PHP echo $rut_emp===false?$datos[17]:$rut_emp;?></th>
+							<th class="col-S"><?=$acc;?></th>
+							<th class="col-T"><?=$datos[19];?></th>
+							<th class="col-U"><?=$datos[20];?></th>
+							<th scope="col"><a href="<?php echo esc_url( get_permalink( $ID ) ); ?>" target="_blank"><?=$ID;?></a></th>
+							<th class="col-Z">								
+								<small style="font-size: 70%">
+						<?php
+							if($tID!=$ID){
+								$tID=$ID;
+								$nc=1;
+							}else{
+								$nc++;
+							}
+							//Agregar Cambios
+							/*
+							if(!empty($datos[1])){
+								update_field('nombre_de_la_sociedad',$datos[1],$ID);
+							}*/
+							if(!empty($sap)){
+								update_field('dueno_matriz',$sap,$ID);
+							}
+							if(!empty($rut_dueno)){
+								update_field('rut_dueno',$rut_dueno,$ID);
+							}
+							if(!empty($datos[4])){
+								update_field('nombre_dueno',$datos[4],$ID);
+							}
+							if(!empty($datos[5])){
+								update_field('clasificacion_dueno',$datos[5],$ID);
+							}
+							/*if(!empty($UDN)){
+								update_field('unidad_negocio_sociedad',$UDN,$ID);
+							}*/
+							if(!empty($asociada)){
+								update_field('asociada',$asociada,$ID);
+							}
+							if(!empty($conta)){
+								update_field('contabilidad',$conta,$ID);
+							}
+							if(!empty($gerente)){
+								update_field('gerente_general',$gerente,$ID);
+							}
+							if(!empty($datos[10])){
+								update_field('moneda_funcional',$datos[10],$ID);
+							}
+							if(!empty($giro)){
+								update_field('giro',$giro,$ID);
+							}
+							if(!empty($dire)){
+								update_field('direccion',$dire,$ID);
+							}
+							if(!empty($datos[13])){
+								update_field('pais',$datos[13],$ID);
+							}
+							if(!empty($fecha)){
+								update_field('fecha_constitucion',$fecha,$ID);
+							}
+							//--Acciones
+							$subEmp=false;
+							if( have_rows('empresas_asociadas',$ID) ) {
+								while( have_rows('empresas_asociadas',$ID) ) {
+									the_row();
+									$rr=get_row_index();
+									//--
+									$eID = get_sub_field('empresa');									
+									$eRUT = get_field('rut',$eID);
+									if($rut_emp == $eRUT){
+										$subEmp=true;
+										$nID=buscarRut($rut_emp);
+										$row = array(
+											't_emp'				=> false,
+											'empresa'			=> $nID,
+											'porcentaje'		=> $acc,
+											'clasificacion'		=> $datos[19]
+										);
+										if($rut_emp==$rut){
+											update_field('porcentaje_participacion',$acc,$ID);
+											echo '<span class="badge text-bg-light">Actualizado Empresa</span><br>';
+										}else{
+											update_row('empresas_asociadas', $rr, $row, $ID);
+											echo '<span class="badge text-bg-info">Actualizado</span><br>';											
+										}
+									}
+									if( empty(get_sub_field('porcentaje')) || get_sub_field('porcentaje')=="." ){
+										delete_row('empresas_asociadas', $rr, $ID);
+									}
+								}
+							}
+							var_dump($subEmp);
+							echo '<br>';
+							if(!$subEmp){
+								$nID=buscarRut($rut_emp);
+								if($rut_emp===false){
+									$nID=false;
+								}
+								var_dump($nID);
+								echo '<br>';
+								if($nID){
+									$row = array(
+										't_emp'				=> false,
+										'empresa'			=> $nID,
+										'porcentaje'		=> $acc,
+										'clasificacion'		=> $datos[19]
+									);
+									if($rut_emp==$rut){
+										update_field('porcentaje_participacion',$acc,$ID);
+										echo '<span class="badge text-bg-light">Actualizado Empresa</span><br>';
+									}else{
+										add_row('empresas_asociadas', $row, $ID);
+									}
+								}else{
+									$row = array(
+										't_emp'				=> true,
+										'empresa_externa'	=> $datos[20],
+										'porcentaje'		=> $acc,
+										'clasificacion'		=> $datos[19]
+									);
+									add_row('empresas_asociadas', $row, $ID);
+								}
+								var_dump($row);
+								echo '<br>';								
+								echo '<span class="badge text-bg-success">Agregado</span><br>';
+							}
+							if(!empty($acc_em)){
+								update_field('acciones_emitidas',$acc_em,$ID);
+							}
+							if(!empty($acc_em)){
+								update_field('acciones_invertidas',$acc_inv,$ID);
+							}
+							?>	
+									</small>
+									<p><a href="<?php echo site_url().'/wp-admin/post.php?post='.$ID.'&action=edit'; ?>" class="btn position-relative" target="_blank">
+										<i class="fa-solid fa-up-right-from-square"></i> Internal Link
+										<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"><?=$nc;?></span>
+									</a></p>
+								</th>
+							</tr>
+							<?php
+						}else{
+						?>
+				  		<tr class="alert alert-danger">
+							<th colspan="23" class="text-center"><i class="fa-regular fa-eye-slash"></i> RUT no encontrado: <strong><?=$rut;?></strong>, <small>se necesita crear empresa primero</small></th>
+						</tr>
+				  		<?php
+							//echo 'ID:'.$ID.' RUT:'.$datos[0].'<br>';
+							//var_dump($ID);
+							$errores++;
+						}
+					}					
+				}
+				$fila++;
+			}
+			fclose($gestor);
+			unlink($archivo_srv);//borra archivo
+			?>
+			  </tbody>
+			</table>
+			</div>
+			<hr>
+			<p><i class="fa-regular fa-eye-slash"></i> Empresas <strong>No encontradas</strong>: <?=$errores;?>, <em>se necesita crear empresas con RUT primero</em></p>
+			<h3><i class="fa-solid fa-triangle-exclamation"></i> Empresas Extranjeras que no se pueden cambiar (<?=$extranjeras;?>), <em><strong><i class="fa-solid fa-circle-exclamation"></i> se deben subir a mano, no hay RUT para buscar y comparar</strong></em></h2>
+			<h3><i class="fa-solid fa-triangle-exclamation"></i> Empresas Externas que no se pueden cambiar (<?=$externo;?>), <em><strong><i class="fa-solid fa-circle-exclamation"></i> se deben subir a mano, no hay RUT para buscar y comparar</strong></em></h2>
+			<?php
+			$return = ob_get_clean();
+       		ob_end_flush();
+		}else{
+			$return="Error al leer archivo";
+		}
+	}else{
+		$return='Error al Subir Archivo ('.$_FILES["archivo"]["error"].')';
+	}
+	//rename( $upload_dir['path'].'/'.$filename, $upload_dir['path'].'/'.$nomFile);
+	wp_die($return);
+}
