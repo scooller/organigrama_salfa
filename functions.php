@@ -392,6 +392,7 @@ function borrar_porc(){
 			$pt++;
 		}
 	}
+	delete_field('porcentaje_participacion',$id);
 	echo '<div class="alert alert-danger mt-3 d-flex" id="aviso-msj" role="alert">';
 	echo '<i class="fa-solid fa-skull-crossbones flex-shrink-0 me-2"></i><div>';
 	echo "<p>Total paginas/empresas es de <strong><i class=\"fa-solid fa-city\"></i> {$pt}</strong></p>";
